@@ -1,0 +1,180 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Authenticated user profile associated with business profiles",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique User Identifier (Firebase Auth UID)" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "Full name of the user" },
+        "currentBusinessId": { "type": "string", "description": "Foreign key referencing current active business" },
+        "businessIds": { "type": "array", "description": "List of accessible business IDs" },
+        "role": { "type": "string", "enum": ["owner", "admin", "staff"], "description": "Access level" },
+        "createdAt": { "type": "string", "description": "Creation timestamp ISO string" }
+      },
+      "required": ["id", "email", "displayName", "currentBusinessId", "role"]
+    },
+    "Business": {
+      "title": "Business",
+      "description": "Multi-tenant business profile and tax configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Business Identifier (businessId)" },
+        "ownerUserId": { "type": "string", "description": "Foreign key referencing User.id owner" },
+        "name": { "type": "string", "description": "Business legal name" },
+        "tagline": { "type": "string", "description": "Business tagline or motto" },
+        "gstin": { "type": "string", "description": "GST Identification Number" },
+        "pan": { "type": "string", "description": "PAN number" },
+        "email": { "type": "string", "description": "Business contact email" },
+        "phone": { "type": "string", "description": "Business phone number" },
+        "address": { "type": "string", "description": "Street address" },
+        "city": { "type": "string", "description": "City" },
+        "state": { "type": "string", "description": "State" },
+        "pincode": { "type": "string", "description": "Pincode" },
+        "invoicePrefix": { "type": "string", "description": "Invoice number prefix" }
+      },
+      "required": ["id", "ownerUserId", "name", "gstin"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product item tied directly to a specific business",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Product Identifier" },
+        "businessId": { "type": "string", "description": "Foreign key linking product to Business entity" },
+        "createdByUserId": { "type": "string", "description": "User who created the product" },
+        "name": { "type": "string", "description": "Product title" },
+        "sku": { "type": "string", "description": "Stock Keeping Unit code" },
+        "hsnSac": { "type": "string", "description": "HSN/SAC code" },
+        "category": { "type": "string", "description": "Product category" },
+        "unit": { "type": "string", "description": "Unit of measurement" },
+        "purchasePrice": { "type": "number", "description": "Purchase rate per unit" },
+        "sellingPrice": { "type": "number", "description": "Selling rate per unit" },
+        "taxRate": { "type": "number", "description": "GST tax percentage" },
+        "stockQuantity": { "type": "number", "description": "Current available quantity" }
+      },
+      "required": ["id", "businessId", "name", "sku", "sellingPrice"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Sales invoice document tied directly to a specific business",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Invoice Identifier" },
+        "businessId": { "type": "string", "description": "Foreign key linking invoice to Business entity" },
+        "createdByUserId": { "type": "string", "description": "User who issued the invoice" },
+        "invoiceNumber": { "type": "string", "description": "Sequential invoice number" },
+        "docType": { "type": "string", "description": "Document classification type" },
+        "partyId": { "type": "string", "description": "Foreign key linking to Party entity" },
+        "partyName": { "type": "string", "description": "Billed party name" },
+        "subtotal": { "type": "number", "description": "Subtotal before taxes" },
+        "totalTax": { "type": "number", "description": "Calculated total GST tax" },
+        "totalAmount": { "type": "number", "description": "Grand total bill amount" },
+        "status": { "type": "string", "description": "Payment status" },
+        "createdAt": { "type": "string", "description": "Date invoice was generated" }
+      },
+      "required": ["id", "businessId", "invoiceNumber", "partyId", "totalAmount"]
+    },
+    "Party": {
+      "title": "Party",
+      "description": "Customer or vendor master profile tied directly to a specific business",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Party Identifier" },
+        "businessId": { "type": "string", "description": "Foreign key linking party to Business entity" },
+        "type": { "type": "string", "enum": ["customer", "vendor"], "description": "Party relationship type" },
+        "name": { "type": "string", "description": "Party legal/trade name" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "gstin": { "type": "string", "description": "GST Identification Number" },
+        "address": { "type": "string", "description": "Primary address" }
+      },
+      "required": ["id", "businessId", "type", "name"]
+    },
+    "CASummaryRecord": {
+      "title": "CA Summary Record",
+      "description": "Real-time synced CA Monthly Summary record in Firestore using invoice ID as single source of truth",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Invoice ID (Single Source of Truth)" },
+        "invoiceId": { "type": "string", "description": "Unique Invoice Identifier" },
+        "businessId": { "type": "string", "description": "Foreign key linking record to Business entity" },
+        "invoiceNumber": { "type": "string", "description": "Invoice sequential number" },
+        "monthKey": { "type": "string", "description": "YYYY-MM format for instant month filtering" },
+        "financialYear": { "type": "string", "description": "Indian FY string" },
+        "status": { "type": "string", "description": "Invoice payment or cancellation status" },
+        "taxableAmount": { "type": "number", "description": "Net taxable value" },
+        "totalGst": { "type": "number", "description": "Total GST amount" },
+        "totalAmount": { "type": "number", "description": "Grand invoice amount" },
+        "action": { "type": "string", "enum": ["create", "edit", "cancel", "delete"] }
+      },
+      "required": ["id", "invoiceId", "businessId", "invoiceNumber", "monthKey", "status"]
+    },
+    "BusinessUser": {
+      "title": "BusinessUser",
+      "description": "Connected user membership with granular permissions scoped to business",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessId": { "type": "string" },
+        "userName": { "type": "string" },
+        "role": { "type": "string", "enum": ["owner", "admin", "manager", "staff", "view_only"] },
+        "permissions": { "type": "array" },
+        "status": { "type": "string", "enum": ["active", "deactivated", "revoked"] }
+      },
+      "required": ["id", "businessId", "userName", "role", "permissions", "status"]
+    },
+    "QRInvitation": {
+      "title": "QRInvitation",
+      "description": "Short-lived secure QR code invitation token for staff access",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessId": { "type": "string" },
+        "userName": { "type": "string" },
+        "role": { "type": "string" },
+        "tokenSecret": { "type": "string" },
+        "isRevoked": { "type": "boolean" }
+      },
+      "required": ["id", "businessId", "tokenSecret"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and permissions"
+    },
+    "/businesses/{businessId}": {
+      "schema": "Business",
+      "description": "Business configuration and details"
+    },
+    "/businesses/{businessId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Products scoped strictly to the parent businessId"
+    },
+    "/businesses/{businessId}/invoices/{invoiceId}": {
+      "schema": "Invoice",
+      "description": "Invoices scoped strictly to the parent businessId"
+    },
+    "/businesses/{businessId}/parties/{partyId}": {
+      "schema": "Party",
+      "description": "Customers & vendors scoped strictly to the parent businessId"
+    },
+    "/businesses/{businessId}/connected_users/{userId}": {
+      "schema": "BusinessUser",
+      "description": "Connected staff users and permissions scoped to business"
+    },
+    "/businesses/{businessId}/qr_invitations/{invitationId}": {
+      "schema": "QRInvitation",
+      "description": "Secure QR code invitations generated by business owner"
+    },
+    "/businesses/{businessId}/ca_monthly_summaries/{invoiceId}": {
+      "schema": "CASummaryRecord",
+      "description": "CA Monthly Summary records scoped to business"
+    },
+    "/ca_monthly_summaries/{invoiceId}": {
+      "schema": "CASummaryRecord",
+      "description": "Top-level CA Monthly Summary records synced using invoice ID"
+    }
+  }
+}

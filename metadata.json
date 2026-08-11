@@ -1,0 +1,10 @@
+{
+  "name": "Remix Shree Billing \u0026 ERP Pro",
+  "description": "Full-featured GST Billing, Inventory Management, Cashbook, and Financial Accounting application built for small-to-medium businesses.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
